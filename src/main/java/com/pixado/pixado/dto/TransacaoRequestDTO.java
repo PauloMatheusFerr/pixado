@@ -9,4 +9,5 @@ public class TransacaoRequestDTO {
     public String chavePix;
     public String descricao;
     public BigDecimal valor;
+
 }

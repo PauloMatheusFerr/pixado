@@ -6,6 +6,8 @@ import com.pixado.pixado.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin
@@ -17,5 +19,10 @@ public class UsuarioController {
     @PostMapping
     public UsuarioResponseDTO cadastrar(@RequestBody UsuarioRequestDTO dto) {
         return service.cadastrar(dto);
+    }
+
+    @GetMapping
+    public List<UsuarioResponseDTO> listarTodos() {
+        return service.listarTodos();
     }
 }

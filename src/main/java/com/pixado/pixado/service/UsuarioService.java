@@ -7,6 +7,8 @@ import com.pixado.pixado.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UsuarioService {
 
@@ -23,11 +25,20 @@ public class UsuarioService {
         usuario.setCaminhoCertificado(dto.caminhoCertificado);
         repository.save(usuario);
 
-        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        UsuarioResponseDTO response = new UsuarioResponseDTO(usuario);
         response.id = usuario.getId();
         response.nome = usuario.getNome();
         response.banco = usuario.getBanco();
         response.chavePix = usuario.getChavePix();
         return response;
     }
+    public List<UsuarioResponseDTO> listarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(UsuarioResponseDTO::new)
+                .toList();
+    }
+
+
+
 }

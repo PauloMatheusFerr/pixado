@@ -1,5 +1,6 @@
 package com.pixado.pixado.model;
 
+import com.pixado.pixado.provider.BancoProvider;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,10 +17,14 @@ public class Usuario {
 
     private String nome;
     private String chavePix;
-    private String banco;
     private String clientId;
     private String clientSecret;
     private String caminhoCertificado;
+
+    @Enumerated(EnumType.STRING)
+    private BancoProvider banco;
+
+    // Getters e setters
 
     public UUID getId() {
         return id;
@@ -45,14 +50,6 @@ public class Usuario {
         this.chavePix = chavePix;
     }
 
-    public String getBanco() {
-        return banco;
-    }
-
-    public void setBanco(String banco) {
-        this.banco = banco;
-    }
-
     public String getClientId() {
         return clientId;
     }
@@ -76,5 +73,12 @@ public class Usuario {
     public void setCaminhoCertificado(String caminhoCertificado) {
         this.caminhoCertificado = caminhoCertificado;
     }
-}
 
+    public BancoProvider getBanco() {
+        return banco;
+    }
+
+    public void setBanco(BancoProvider banco) {
+        this.banco = banco;
+    }
+}
