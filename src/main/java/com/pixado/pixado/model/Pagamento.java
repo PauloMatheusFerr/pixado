@@ -17,10 +17,13 @@ public class Pagamento {
     @Enumerated(EnumType.STRING)
     private StatusPagamento status;
 
-    private String idTransacao; // retornado pela API externa
-    @Column(name = "qr_code_payload")
-    private String qrCodePayload; // código "copia e cola"
-    private String qrCodeImagem; // base64 da imagem
+    private String idTransacao;
+
+    @Column(name = "qr_code_payload", columnDefinition = "TEXT")
+    private String qrCodePayload;
+
+    @Column(columnDefinition = "TEXT")
+    private String qrCodeImagem;
 
     private LocalDateTime criadoEm;
 

@@ -1,26 +1,16 @@
+
 package com.pixado.pixado.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pixado.pixado.dto.PixPayloadResult;
 import com.pixado.pixado.model.Transacao;
 import com.pixado.pixado.model.Usuario;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.core5.http.config.Registry;
-import org.apache.hc.core5.http.config.RegistryBuilder;
-import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Component;
 
-import javax.net.ssl.SSLContext;
-import java.io.InputStream;
-import java.security.KeyStore;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +23,7 @@ public class GerencianetPixProvider implements PixProvider {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String gerarPayload(Usuario usuario, Transacao transacao) {
+    public PixPayloadResult gerarPayload(Usuario usuario, Transacao transacao) {
         try {
             String accessToken = obterAccessToken(usuario);
             String txid = UUID.randomUUID().toString().replace("-", "").substring(0, 26);
@@ -50,7 +40,7 @@ public class GerencianetPixProvider implements PixProvider {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<String> request = new HttpEntity<>(objectMapper.writeValueAsString(cobranca), headers);
-            RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory());
+            RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory(usuario.getCaminhoCertificado()));
 
             ResponseEntity<JsonNode> response = restTemplate.exchange(
                     "https://pix.api.efipay.com.br/v2/cob/" + txid,
@@ -68,11 +58,16 @@ public class GerencianetPixProvider implements PixProvider {
                     JsonNode.class
             );
 
-            return qrResponse.getBody().get("qrcode").asText();
+            String qrcode = qrResponse.getBody().get("qrcode").asText();
+            String imagem = qrResponse.getBody().get("imagemQrcode").asText();
+
+            return new PixPayloadResult(txid, qrcode, imagem);
+
         } catch (Exception e) {
             throw new RuntimeException("Erro ao gerar payload Gerencianet", e);
         }
     }
+
 
     @Override
     public String gerarQRCode(String payload) {
@@ -86,18 +81,28 @@ public class GerencianetPixProvider implements PixProvider {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(accessToken);
 
-            RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory());
+            RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory(usuario.getCaminhoCertificado()));
             ResponseEntity<JsonNode> response = restTemplate.exchange(
-                    "https://pix.api.efipay.com.br/v2/pix/" + txid,
+                    "https://pix.api.efipay.com.br/v2/cob/" + txid,
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     JsonNode.class
             );
-            return response.getBody().get("status").asText().equalsIgnoreCase("CONCLUIDA");
+
+            JsonNode body = response.getBody();
+
+            // O campo "pix" indica se houve pagamento
+            if (body != null && body.has("pix") && body.get("pix").isArray() && body.get("pix").size() > 0) {
+                return true; // Foi pago
+            }
+
+            return false; // Ainda não foi pago
         } catch (Exception e) {
+            e.printStackTrace(); // Para debugar
             return false;
         }
     }
+
 
     private String obterAccessToken(Usuario usuario) throws Exception {
         String auth = usuario.getClientId() + ":" + usuario.getClientSecret();
@@ -108,7 +113,7 @@ public class GerencianetPixProvider implements PixProvider {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         String body = "grant_type=client_credentials";
-        RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory());
+        RestTemplate restTemplate = new RestTemplate(new HttpsClientRequestFactory(usuario.getCaminhoCertificado()));
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         ResponseEntity<JsonNode> response = restTemplate.exchange(
@@ -119,41 +124,5 @@ public class GerencianetPixProvider implements PixProvider {
         );
 
         return response.getBody().get("access_token").asText();
-    }
-
-    static class HttpsClientRequestFactory extends HttpComponentsClientHttpRequestFactory {
-        public HttpsClientRequestFactory() throws Exception {
-            char[] senha = "".toCharArray(); // senha padrão (vazia) para certificado sandbox
-
-            InputStream certificadoStream = Thread.currentThread()
-                    .getContextClassLoader()
-                    .getResourceAsStream("certificados/Testando Produção.p12");
-
-            if (certificadoStream == null) {
-                throw new RuntimeException("Certificado não encontrado em resources/certificados.");
-            }
-
-            KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(certificadoStream, senha);
-
-            SSLContext sslContext = SSLContexts.custom()
-                    .loadKeyMaterial(keyStore, senha)
-                    .build();
-
-            SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext);
-
-            Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("https", sslSocketFactory)
-                    .build();
-
-            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-
-            CloseableHttpClient httpClient = HttpClients.custom()
-                    .setConnectionManager(connectionManager)
-                    .build();
-
-            this.setHttpClient(httpClient);
-
-        }
     }
 }

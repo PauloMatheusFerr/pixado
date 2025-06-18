@@ -35,8 +35,13 @@ public class TransacaoService {
         repository.save(transacao);
 
         PixProvider provider = PixProviderFactory.getProvider(usuario.getBanco());
-        String payload = provider.gerarPayload(usuario, transacao);
-        String qrCode = provider.gerarQRCode(payload);
+        var resultado = provider.gerarPayload(usuario, transacao);
+        String payload = resultado.getPayload();
+        String qrCode = resultado.getImagemBase64(); // ou resultado.getPayload() se não quiser imagem
+        String txid = resultado.getTxid();
+
+        transacao.setId(UUID.fromString(txid)); // se quiser salvar o mesmo txid da cobrança Pix
+
 
         TransacaoResponseDTO response = new TransacaoResponseDTO();
         response.idTransacao = transacao.getId();
