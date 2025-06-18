@@ -1,71 +1,72 @@
-# 📲 Pixado - API
+📲 Pixado - API
+Pixado é uma API desenvolvida em Spring Boot para facilitar a geração de QR Codes de pagamento via Pix, além de permitir a verificação de status e o gerenciamento de transações por chave Pix e cliente.
 
-API do projeto **Pixado**: um sistema que permite gerar QR Code de pagamento via Pix, verificar status de transações e organizar relatórios por chave Pix e cliente.  
-Desenvolvido com **Spring Boot** e integração futura com serviços como **Gerencianet**, **Pix via Bacen**, **PicPay** etc.
+🔄 Suporte futuro a integrações com Gerencianet, Bacen, PicPay, Banco Inter, entre outros.
 
----
+🚀 Tecnologias Utilizadas
+Java 17+
 
-## 🚀 Tecnologias
+Spring Boot (REST API)
 
-- Java 17+
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- Docker (para o banco de dados)
-- RESTful API
+Spring Data JPA
 
----
+PostgreSQL
 
-## 📦 Funcionalidades
+Docker (para o banco de dados)
 
-- ✅ Cadastro de usuários com chave Pix e credenciais bancárias
-- ✅ Geração de QR Code de pagamento
-- ✅ Verificação de status de pagamento
-- 🚧 Organização de relatórios por cliente e chave Pix (em desenvolvimento)
-- 🚧 Integração real com provedores de Pix (em desenvolvimento)
+Hibernate
 
----
+Lombok (opcional)
 
-## 📂 Estrutura do Projeto
+Integração com certificados digitais (.p12)
 
-```
+📦 Funcionalidades
+✅ Cadastro de usuários com chave Pix e credenciais bancárias
+
+✅ Geração de QR Code dinâmico com payload e imagem base64
+
+✅ Verificação do status de pagamento (ex: PAGO, PENDENTE)
+
+🚧 Relatórios organizados por cliente e chave Pix (em desenvolvimento)
+
+🚧 Integrações completas com bancos reais (Gerencianet, PicPay etc.)
+
+📁 Estrutura de Diretórios
+bash
+Copiar
+Editar
 src/
-├── controller/
-│   └── UsuarioController.java
-├── service/
-│   └── UsuarioService.java
-├── model/
-│   └── Usuario.java
-├── repository/
-│   └── UsuarioRepository.java
-├── dto/
-│   ├── UsuarioRequestDTO.java
-│   └── UsuarioResponseDTO.java
-└── ...
-```
-
----
-
-## 🔧 Como rodar
-
-### 1. Clone o projeto
-```bash
-git clone https://github.com/seu-usuario/pixado-api.git
+├── controller/        # Endpoints da API
+├── service/           # Regras de negócio
+├── model/             # Entidades JPA
+├── repository/        # Interfaces de acesso ao banco
+├── dto/               # Objetos de transferência de dados
+├── provider/          # Abstrações para provedores de Pix
+└── config/            # Configurações globais
+🔧 Como Executar Localmente
+1. Clone o repositório
+bash
+Copiar
+Editar
+git clone https://github.com/xenobil/pixado-api.git
 cd pixado-api
-```
-
-### 2. Suba o banco com Docker
-```bash
+2. Inicie o banco de dados com Docker
+bash
+Copiar
+Editar
 docker-compose up -d
-```
+Banco disponível em localhost:5432 com:
 
-> Isso sobe um PostgreSQL em `localhost:5432` com:
-> - Banco: `pixado`
-> - Usuário: `postgres`
-> - Senha: `postgres`
+Database: pixado
 
-### 3. Configure o `application.yml`
-```yaml
+Usuário: postgres
+
+Senha: postgres
+
+3. Configure application.yml ou .properties
+yaml
+Copiar
+Editar
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/pixado
@@ -76,47 +77,35 @@ spring:
       ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-```
-
-### 4. Rode a aplicação
-```bash
+4. Execute a aplicação
+bash
+Copiar
+Editar
 ./mvnw spring-boot:run
-```
+🧪 Testes com Postman
+Importe a coleção de testes:
 
----
+📁 Pixado_API.postman_collection.json
 
-## 🧪 Teste com Postman
+📌 Exemplo de Requisição - Cadastro de Usuário
+POST /api/usuarios
 
-Importe o arquivo:
-📁 [`Pixado_API.postman_collection.json`](Pixado_API.postman_collection.json)
-
----
-
-## ✍️ Exemplo de cadastro de usuário
-
-**POST** `/api/usuarios`
-```json
+json
+Copiar
+Editar
 {
   "nome": "João da Silva",
   "chavePix": "joao@email.com",
   "banco": "GERENCIANET",
   "clientId": "SEU_CLIENT_ID",
   "clientSecret": "SEU_CLIENT_SECRET",
-  "caminhoCertificado": "/caminho/certificado.p12"
+  "caminhoCertificado": "/caminho/do/certificado.p12"
 }
-```
+👨‍💻 Autor
+Paulo Matheus Ferreira da Silva
+📧 paulomatheusferr@gmail.com
+🔗 LinkedIn
+🐙 GitHub
 
----
-
-## 👨‍💻 Autor
-
-Paulo Matheus Ferreira da Silva  
-📧 paulomatheusferr@gmail.com  
-🔗 [LinkedIn](https://www.linkedin.com/in/paulo-matheus-ferreira-566ba8124/)  
-🐙 [GitHub](https://github.com/xenobil)
-
----
-
-## 📄 Licença
-
-MIT License
+📄 Licença
+Este projeto está licenciado sob a MIT License.
