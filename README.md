@@ -85,6 +85,22 @@ spring:
 
 ---
 
+## 📖 Documentação da API (Swagger)
+
+Após rodar a aplicação, acesse a documentação interativa Swagger UI:
+
+🔗 **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+🔗 **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
+A documentação inclui:
+- ✅ Descrição detalhada de todos os endpoints
+- ✅ Exemplos de requisição e resposta
+- ✅ Schemas dos objetos
+- ✅ Interface interativa para testar a API
+
+---
+
 ## 🧪 Teste com Postman
 
 Importe o arquivo:
